@@ -79,7 +79,7 @@ class Window:
             with ZipFile(self.modpack_path, 'r', metadata_encoding = "utf-8") as zObject:
                 file_count = 0
                 for file in zObject.namelist():
-                    if file.startswith(('mods/', 'shaderpacks/', 'resourcepacks/', 'librarires/')):
+                    if file.startswith(('mods/', 'shaderpacks/', 'resourcepacks/', 'libraries/')):
                         file_count += 1
                         zObject.extract(file, path=self.minecraft_path)
                 if file_count == 0:
