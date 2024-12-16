@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import os
 import re
-
+from zipfile import ZipFile
 
 class Window:
     root = TkinterDnD.Tk()
@@ -74,7 +74,21 @@ class Window:
         self.d_path.set(self.default_d_path)
 
     def set_up(self):
-        os.replace(self.modpack_path, f"{self.minecraft_path}{self.filename}")
+        #os.replace(self.modpack_path, f"{self.minecraft_path}{self.filename}")
+        if self.filename.endswith(".zip"):
+            with ZipFile(self.modpack_path, 'r', metadata_encoding = "utf-8") as zObject:
+                file_count = 0
+                for file in zObject.namelist():
+                    if file.startswith(('mods/', 'shaderpacks/', 'resourcepacks/', 'librarires/')):
+                        file_count += 1
+                        zObject.extract(file, path=self.minecraft_path)
+                if file_count == 0:
+                    print(f'Error, no modpack found in {self.filename}')
+                else:
+                    print(f'Modpack installed at {self.minecraft_path}')
+            zObject.close()
+        else:
+            print("The file is not a zip file")
         return
 
 
