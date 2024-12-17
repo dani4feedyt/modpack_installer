@@ -17,6 +17,7 @@ class Window:
     filename = ""
 
     default_d_path = f"C:/Users/{os.getlogin()}/AppData/Roaming/.minecraft/"
+    temp_path = "C:/Program Files (x86)/modpack_installer/temp"
 
     canvas = None
     E_path = None
@@ -69,6 +70,11 @@ class Window:
         self.modpack_path = mod_path
         self.filename = os.path.basename(mod_path)
         print(self.filename)
+        try:
+            os.makedirs(self.temp_path)
+        except PermissionError:
+            print(f"Permission denied: Unable to create '{self.temp_path}'.")
+
 
     def set_default_push(self):
         self.d_path.set(self.default_d_path)
