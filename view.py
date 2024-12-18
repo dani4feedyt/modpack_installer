@@ -1,9 +1,9 @@
 import tkinter as tk
-import tkinterdnd2
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import os
 import re
 from zipfile import ZipFile
+import shutil
 
 
 def unzip(source, dist):
@@ -38,7 +38,7 @@ class Window:
     filename = ""
 
     default_d_path = f"C:/Users/{os.getlogin()}/AppData/Roaming/.minecraft/"
-    temp_path = "C:/Program Files (x86)/modpack_installer/temp"
+    temp_path = "C:/Modpack Installer/Temp"
 
     canvas = None
     E_path = None
@@ -46,6 +46,7 @@ class Window:
     B_load = None
     B_setDefault = None
     B_setUp = None
+
 
     def start(self):
         self.d_path.set(self.default_d_path)
@@ -63,7 +64,7 @@ class Window:
         self.E_path = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_path)
         self.E_modpath = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_modpath)
 
-        self.B_load = tk.Button(self.root, text="Load", command=self.load_push)
+        self.B_load = tk.Button(self.root, text="Save", command=self.save_push)
         self.B_setDefault = tk.Button(self.root, text="Set Default Path", command=self.set_default_push)
         self.B_setUp = tk.Button(self.root, text="Setup", command=self.set_up)
 
@@ -84,23 +85,27 @@ class Window:
         self.E_modpath.insert(tk.END, re.sub(r'[{}]', '', event.data))
         return event.action
 
-    def load_push(self):
-        user_path = self.d_path.get()
-        self.minecraft_path = user_path
-        mod_path = self.d_modpath.get()
-        self.modpack_path = mod_path
-        self.filename = os.path.basename(mod_path)
+    def save_push(self):
+        self.minecraft_path = self.d_path.get()
+        self.modpack_path = self.d_modpath.get()
+        self.filename = os.path.basename(self.modpack_path)
+        modpack_temp_path = self.temp_path + "/" + self.filename
 
-        print(self.filename)
         try:
-            unzip(self.modpack_path, self.temp_path)
-        except PermissionError:
-            print(f"Permission denied: Unable to create '{self.temp_path}'.")
+            os.mkdir(modpack_temp_path)
+        except FileExistsError:
+            print(f"File already exists: {self.temp_path}.")
+        try:
+            shutil.copy(self.modpack_path, modpack_temp_path)
+        except FileNotFoundError:
+            print(f"File not found: {modpack_temp_path}")
 
     def set_default_push(self):
         self.d_path.set(self.default_d_path)
 
     def set_up(self):
+        self.minecraft_path = self.d_path.get()
+        self.modpack_path = self.d_modpath.get()
         unzip(self.modpack_path, self.minecraft_path)
 
 
