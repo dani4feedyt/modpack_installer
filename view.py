@@ -36,6 +36,7 @@ class Window:
     minecraft_path = ""
     modpack_path = ""
     filename = ""
+    modfolder_name = ""
 
     default_d_path = f"C:/Users/{os.getlogin()}/AppData/Roaming/.minecraft/"
     temp_path = "C:/Modpack Installer/Temp"
@@ -46,7 +47,7 @@ class Window:
     B_load = None
     B_setDefault = None
     B_setUp = None
-
+    tempfolderlist = []
 
     def start(self):
         self.d_path.set(self.default_d_path)
@@ -78,6 +79,19 @@ class Window:
         self.E_path.place(x=140, y=50)
         self.E_modpath.place(x=140, y=430)
 
+        base_y = 90
+        b_id = 0
+        for folder in os.listdir(self.temp_path):
+            tag = os.fsdecode(folder)
+            self.tempfolderlist.append(tag)
+            if len(tag) >= 12:
+                tag = tag[:12] + "..."
+            button = tk.Button(self.root, name=str(b_id), text=tag, height=1, width=12)
+            button.config(command=(lambda name=b_id: self.load_modpack(name)))
+            button.place(x=40, y=base_y)
+            base_y += 30
+            b_id += 1
+
         self.root.mainloop()
 
     def handle_drop(self, event):
@@ -85,11 +99,18 @@ class Window:
         self.E_modpath.insert(tk.END, re.sub(r'[{}]', '', event.data))
         return event.action
 
+    def load_modpack(self, name):
+        self.modfolder_name = self.tempfolderlist[int(name)]
+        self.filename = os.listdir(f"{self.temp_path}/{self.modfolder_name}")[0]
+        self.E_modpath.delete(0, len(self.E_modpath.get()))
+        self.E_modpath.insert(tk.END, f"{self.temp_path}/{self.modfolder_name}/{self.filename}")
+
     def save_push(self):
         self.minecraft_path = self.d_path.get()
         self.modpack_path = self.d_modpath.get()
         self.filename = os.path.basename(self.modpack_path)
-        modpack_temp_path = self.temp_path + "/" + self.filename
+        self.modfolder_name = self.filename[:-3]
+        modpack_temp_path = f"{self.temp_path}/{self.modfolder_name}"
 
         try:
             os.mkdir(modpack_temp_path)
@@ -105,7 +126,9 @@ class Window:
 
     def set_up(self):
         self.minecraft_path = self.d_path.get()
+        print(self.minecraft_path)
         self.modpack_path = self.d_modpath.get()
+        print(self.modpack_path)
         unzip(self.modpack_path, self.minecraft_path)
 
 
