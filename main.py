@@ -1,9 +1,9 @@
 import view
 
 window = view.Window()
-window.start()
 
-
+if __name__ == '__main__':
+    window.start()
 
 
 
