@@ -79,6 +79,12 @@ class Window:
         self.E_path = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_path)
         self.E_modpath = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_modpath)
 
+        self.E_path.bind("<FocusIn>", lambda args: self.focus_in_entry_box(self.E_path))
+        self.E_path.bind("<FocusOut>", lambda args: self.focus_out_entry_box(self.E_path, 'Enter .minecraft folder path'))
+
+        self.E_modpath.bind("<FocusIn>", lambda args: self.focus_in_entry_box(self.E_modpath))
+        self.E_modpath.bind("<FocusOut>", lambda args: self.focus_out_entry_box(self.E_modpath, 'Enter modpack archive path'))
+
         self.B_save = tk.Button(self.root, text="Save", command=self.save_push)
         self.B_setDefault = tk.Button(self.root, text="Set Default Path", command=self.set_default_push)
         self.folder_image = tk.PhotoImage(width=1, height=7)
@@ -107,6 +113,17 @@ class Window:
 
         self.root.mainloop()
 
+    def focus_out_entry_box(self, entry, widget_text):
+        if len(entry.get()) == 0:
+            entry.delete(0, tk.END)
+            entry['fg'] = 'Grey'
+            entry.insert(0, widget_text)
+
+    def focus_in_entry_box(self, entry):
+        if entry['fg'] == 'Grey':
+            entry['fg'] = 'Black'
+            entry.delete(0, tk.END)
+
     def buttons_place(self):
         for btn in self.btn_list:
             btn.destroy()
@@ -129,6 +146,7 @@ class Window:
         self.L_error.place_forget()
 
         self.E_modpath.delete(0, len(self.d_modpath.get()))
+        self.E_modpath['fg'] = 'Black'
         self.E_modpath.insert(tk.END, re.sub(r'[{}]', '', event.data))
         return event.action
 
@@ -139,6 +157,7 @@ class Window:
         try:
             self.filename = os.listdir(f"{self.temp_path}/{self.modfolder_name}")[0]
             self.E_modpath.delete(0, len(self.E_modpath.get()))
+            self.E_modpath['fg'] = 'Black'
             self.E_modpath.insert(tk.END, f"{self.temp_path}/{self.modfolder_name}/{self.filename}")
         except IndexError:
             self.L_error.config(text="Error. Folder is empty")
@@ -174,6 +193,7 @@ class Window:
         self.buttons_place()
 
     def set_default_push(self):
+        self.E_path['fg'] = 'Black'
         self.d_path.set(self.default_d_path)
 
     def set_up(self):
