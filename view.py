@@ -77,11 +77,12 @@ class Window:
         self.L_error = tk.Label(self.root, background=self.back, fg="Red", font="Arial 15 bold")
 
         self.E_path = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_path)
-        self.E_modpath = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_modpath)
+        self.E_modpath = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_modpath, fg='Grey')
 
         self.E_path.bind("<FocusIn>", lambda args: self.focus_in_entry_box(self.E_path))
         self.E_path.bind("<FocusOut>", lambda args: self.focus_out_entry_box(self.E_path, 'Enter .minecraft folder path'))
 
+        self.d_modpath.set('Enter modpack archive path')
         self.E_modpath.bind("<FocusIn>", lambda args: self.focus_in_entry_box(self.E_modpath))
         self.E_modpath.bind("<FocusOut>", lambda args: self.focus_out_entry_box(self.E_modpath, 'Enter modpack archive path'))
 
