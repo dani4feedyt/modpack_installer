@@ -1,11 +1,10 @@
-import time
 import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import os
 import re
 from zipfile import ZipFile
 import shutil
-
+import webbrowser
 
 
 def unzip(source, dist):
@@ -13,7 +12,7 @@ def unzip(source, dist):
     errflag = False
 
     if filename.endswith(".zip"):
-        with ZipFile(source, 'r', metadata_encoding = "utf-8") as zObject:
+        with ZipFile(source, 'r', metadata_encoding="utf-8") as zObject:
             file_count = 0
             for file in zObject.namelist():
                 if file.startswith(('mods/', 'shaderpacks/', 'resourcepacks/', 'libraries/')):
@@ -51,8 +50,9 @@ class Window:
     L_error = None
     E_path = None
     E_modpath = None
-    B_load = None
+    B_save = None
     B_setDefault = None
+    B_openFolder = None
     B_setUp = None
 
     btn_list = []
@@ -60,9 +60,9 @@ class Window:
     tempfolderlist = []
 
 
-
     def start(self):
         self.d_path.set(self.default_d_path)
+        self.minecraft_path = self.default_d_path
 
         self.root.title("Modpack Installer")
         self.root.configure(background=self.back)
@@ -79,15 +79,18 @@ class Window:
         self.E_path = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_path)
         self.E_modpath = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_modpath)
 
-        self.B_load = tk.Button(self.root, text="Save", command=self.save_push)
+        self.B_save = tk.Button(self.root, text="Save", command=self.save_push)
         self.B_setDefault = tk.Button(self.root, text="Set Default Path", command=self.set_default_push)
+        self.folder_image = tk.PhotoImage(width=1, height=7)
+        self.B_openFolder = tk.Button(self.root, width=20, height=18, text='🗀', image=self.folder_image, compound="bottom", font='Helvetica 18 bold', command=self.open_folder)##for garbage collector folder_image defined as attribute
         self.B_setUp = tk.Button(self.root, text="Setup", command=self.set_up)
 
         self.canvas.drop_target_register(DND_FILES)
         self.canvas.dnd_bind('<<Drop>>', self.handle_drop)
 
-        self.B_load.place(x=760, y=50)
+        self.B_save.place(x=760, y=50)
         self.B_setDefault.place(x=40, y=50)
+        self.B_openFolder.place(x=800, y=50)
         self.B_setUp.place(x=760, y=250)
 
         self.E_path.place(x=140, y=50)
@@ -103,8 +106,6 @@ class Window:
         self.root.after(1000, filechange_monitor)
 
         self.root.mainloop()
-
-
 
     def buttons_place(self):
         for btn in self.btn_list:
@@ -142,6 +143,10 @@ class Window:
         except IndexError:
             self.L_error.config(text="Error. Folder is empty")
             self.L_error.place(x=40, y=15)
+
+    def open_folder(self):
+        self.minecraft_path = self.d_path.get()
+        webbrowser.open(os.path.realpath(self.minecraft_path))
 
     def save_push(self):
         self.L_error.place_forget()
