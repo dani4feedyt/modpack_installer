@@ -74,6 +74,8 @@ class Window:
         self.canvas.pack()
         self.canvas.create_rectangle((140, 90), (750, 430), fill=self.front)
 
+        self.canvas.bind("<Button-1>", self.root_focus)
+
         self.L_error = tk.Label(self.root, background=self.back, fg="Red", font="Arial 15 bold")
 
         self.E_path = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_path)
@@ -83,6 +85,7 @@ class Window:
         self.E_path.bind("<FocusOut>", lambda args: self.focus_out_entry_box(self.E_path, 'Enter .minecraft folder path'))
 
         self.d_modpath.set('Enter modpack archive path')
+
         self.E_modpath.bind("<FocusIn>", lambda args: self.focus_in_entry_box(self.E_modpath))
         self.E_modpath.bind("<FocusOut>", lambda args: self.focus_out_entry_box(self.E_modpath, 'Enter modpack archive path'))
 
@@ -111,8 +114,15 @@ class Window:
             self.root.after(1000, filechange_monitor)
 
         self.root.after(1000, filechange_monitor)
-
         self.root.mainloop()
+
+    def root_focus(self, event):
+        # x, y = self.root.winfo_pointerxy()
+        # print(x, y)
+        # widget = self.root.winfo_containing(x, y)
+        # print(widget)
+
+        self.root.focus()
 
     def focus_out_entry_box(self, entry, widget_text):
         if len(entry.get()) == 0:
