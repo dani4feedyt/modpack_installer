@@ -115,8 +115,10 @@ class Window:
         self.buttons_place()
 
         if self.is_admin:
-            tk.messagebox.showwarning("Warning", "Program is opened in an admin mode. Some features may not work properly. Please restart in normal mode.")
+            self.root.lower()
+            tk.messagebox.showwarning("Warning", "Program is opened in adminisrator mode. Some features may not work properly. Please restart in non-admin mode.")
             self.is_admin = False
+            self.root.focus_set()
 
         def filechange_monitor():
             if len(os.listdir(self.temp_path)) != len(self.tempfolderlist):
