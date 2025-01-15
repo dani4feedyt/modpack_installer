@@ -32,6 +32,14 @@ def unzip(source, dist):
     return response, errflag
 
 
+def check_for_input(entry):
+    if entry.endswith((".zip", ".rar")):
+        if any(i in entry for i in [':\\', ':/']):
+            if len(entry) >= 7:
+                return True
+    return False
+
+
 class Window:
     root = TkinterDnD.Tk()
 
@@ -187,35 +195,46 @@ class Window:
             self.L_error.place(x=40, y=15)
 
     def open_folder(self):
+        self.L_error.place_forget()
+
         self.minecraft_path = self.d_path.get()
         webbrowser.open(os.path.realpath(self.minecraft_path))
 
     def save_push(self):
         self.L_error.place_forget()
 
-        self.minecraft_path = self.d_path.get()
-        self.modpack_path = self.d_modpath.get()
-        self.filename = os.path.basename(self.modpack_path)
-        self.modfolder_name = self.filename[:-3]
-        modpack_temp_path = f"{self.temp_path}/{self.modfolder_name}"
+        if check_for_input(self.d_modpath.get()):
+            self.minecraft_path = self.d_path.get()
+            self.modpack_path = self.d_modpath.get()
+            self.filename = os.path.basename(self.modpack_path)
+            self.modfolder_name = self.filename[:-3]
+            modpack_temp_path = f"{self.temp_path}/{self.modfolder_name}"
 
-        try:
-            os.mkdir(modpack_temp_path)
-        except FileExistsError:
-            self.L_error.config(text=f"Error. File already exists: {self.temp_path}.")
-            self.L_error.place(x=40, y=15)
-        try:
-            shutil.copy(self.modpack_path, modpack_temp_path)
-        except FileNotFoundError:
-            self.L_error.config(text=f"Error. File not found: {modpack_temp_path}")
-            self.L_error.place(x=40, y=15)
-        except shutil.SameFileError:
-            self.L_error.config(text=f"Error. Same file: {modpack_temp_path}")
+            try:
+                os.mkdir(modpack_temp_path)
+            except FileExistsError:
+                self.L_error.config(text=f"Error. File already saved: {modpack_temp_path}")
+                self.L_error.place(x=40, y=15)
+            else:
+                try:
+                    shutil.copy(self.modpack_path, modpack_temp_path)
+                except FileNotFoundError:
+                    self.L_error.config(text=f"Error. File not found: {self.modpack_path}")
+                    self.L_error.place(x=40, y=15)
+                    os.rmdir(modpack_temp_path)
+                except shutil.SameFileError:
+                    self.L_error.config(text=f"Error. Same file: {self.modpack_path}")
+                    self.L_error.place(x=40, y=15)
+                    os.rmdir(modpack_temp_path)
+        else:
+            self.L_error.config(text="Error. Invalid modpack path.")
             self.L_error.place(x=40, y=15)
 
         self.buttons_place()
 
     def set_default_push(self):
+        self.L_error.place_forget()
+
         self.E_path['fg'] = 'Black'
         self.d_path.set(self.default_d_path)
 
