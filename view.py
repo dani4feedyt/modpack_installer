@@ -12,22 +12,26 @@ import webbrowser
 def unzip(source, dist):
     filename = os.path.basename(source)
     errflag = False
+    response = None
 
     if filename.endswith(".zip"):
-        with ZipFile(source, 'r', metadata_encoding="utf-8") as zObject:
-            file_count = 0
-            for file in zObject.namelist():
-                if file.startswith(('mods/', 'shaderpacks/', 'resourcepacks/', 'libraries/')):
-                    file_count += 1
-                    zObject.extract(file, path=dist)
-            if file_count == 0:
-                response = f'No modpack found in {filename}'
-                errflag = True
-            else:
-                response = f'Modpack installed at {source}'
-        zObject.close()
+        try:
+            with ZipFile(source, 'r', metadata_encoding="utf-8") as zObject:
+                file_count = 0
+                for file in zObject.namelist():
+                    if file.startswith(('mods/', 'shaderpacks/', 'resourcepacks/', 'libraries/', 'config/')):
+                        file_count += 1
+                        zObject.extract(file, path=dist)
+                if file_count == 0:
+                    response = f'No modpack found in {filename}'
+                    errflag = True
+
+            zObject.close()
+        except FileNotFoundError:
+            errflag = True
+            response = f'File not found: {filename}'
     else:
-        response = "The file is not a zip file"
+        response = "Selected file is not a zip file."
         errflag = True
     return response, errflag
 
@@ -61,6 +65,7 @@ class Window:
 
     canvas = None
     L_error = None
+    L_info = None
     E_path = None
     E_modpath = None
     B_save = None
@@ -91,6 +96,7 @@ class Window:
         self.canvas.bind("<Button-1>", self.root_focus)
 
         self.L_error = tk.Label(self.root, background=self.back, fg="Red", font="Arial 15 bold")
+        self.L_info = tk.Label(self.root, background=self.back, fg="Blue", font="Arial 15 bold")
 
         self.E_path = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_path)
         self.E_modpath = tk.Entry(self.root, width=100, borderwidth=5, textvariable=self.d_modpath, fg='Grey')
@@ -175,6 +181,7 @@ class Window:
 
     def handle_drop(self, event):
         self.L_error.place_forget()
+        self.L_info.place_forget()
 
         self.E_modpath.delete(0, len(self.d_modpath.get()))
         self.E_modpath['fg'] = 'Black'
@@ -183,6 +190,7 @@ class Window:
 
     def load_modpack(self, name):
         self.L_error.place_forget()
+        self.L_info.place_forget()
 
         self.modfolder_name = self.tempfolderlist[int(name)]
         try:
@@ -191,17 +199,25 @@ class Window:
             self.E_modpath['fg'] = 'Black'
             self.E_modpath.insert(tk.END, f"{self.temp_path}/{self.modfolder_name}/{self.filename}")
         except IndexError:
+            self.L_info.place_forget()
             self.L_error.config(text="Error. Folder is empty")
             self.L_error.place(x=40, y=15)
 
     def open_folder(self):
         self.L_error.place_forget()
+        self.L_info.place_forget()
 
         self.minecraft_path = self.d_path.get()
         webbrowser.open(os.path.realpath(self.minecraft_path))
 
     def save_push(self):
         self.L_error.place_forget()
+        self.L_info.place_forget()
+
+        self.L_info.config(text="Saving the modpack to the temp folder...")
+        self.L_info.place(x=40, y=15)
+
+        self.root.update()
 
         if check_for_input(self.d_modpath.get()):
             self.minecraft_path = self.d_path.get()
@@ -213,20 +229,27 @@ class Window:
             try:
                 os.mkdir(modpack_temp_path)
             except FileExistsError:
+                self.L_info.place_forget()
                 self.L_error.config(text=f"Error. File already saved: {modpack_temp_path}")
                 self.L_error.place(x=40, y=15)
             else:
                 try:
                     shutil.copy(self.modpack_path, modpack_temp_path)
                 except FileNotFoundError:
+                    self.L_info.place_forget()
                     self.L_error.config(text=f"Error. File not found: {self.modpack_path}")
                     self.L_error.place(x=40, y=15)
                     os.rmdir(modpack_temp_path)
                 except shutil.SameFileError:
+                    self.L_info.place_forget()
                     self.L_error.config(text=f"Error. Same file: {self.modpack_path}")
                     self.L_error.place(x=40, y=15)
                     os.rmdir(modpack_temp_path)
+                else:
+                    self.L_info.config(text="Modpack has been saved successfully.")
+                    self.L_info.place(x=40, y=15)
         else:
+            self.L_info.place_forget()
             self.L_error.config(text="Error. Invalid modpack path.")
             self.L_error.place(x=40, y=15)
 
@@ -234,23 +257,40 @@ class Window:
 
     def set_default_push(self):
         self.L_error.place_forget()
+        self.L_info.place_forget()
 
         self.E_path['fg'] = 'Black'
         self.d_path.set(self.default_d_path)
 
     def set_up(self):
         self.L_error.place_forget()
+        self.L_info.place_forget()
 
-        self.minecraft_path = self.d_path.get()
-        print(self.minecraft_path)
-        self.modpack_path = self.d_modpath.get()
-        print(self.modpack_path)
+        self.L_info.config(text="Setting up the modpack...")
+        self.L_info.place(x=40, y=15)
 
-        unzipped_resp = unzip(self.modpack_path, self.minecraft_path)
+        self.root.update()
 
-        if unzipped_resp[1] is True:
-            self.L_error.config(text=f"Error. {unzipped_resp[0]}")
+        if check_for_input(self.d_modpath.get()):
+
+            self.minecraft_path = self.d_path.get()
+            self.modpack_path = self.d_modpath.get()
+
+            unzipped_resp = unzip(self.modpack_path, self.minecraft_path)
+
+            if unzipped_resp[1] is True:
+                self.L_info.place_forget()
+                self.L_error.config(text=f"Error. {unzipped_resp[0]}")
+                self.L_error.place(x=40, y=15)
+
+            else:
+                self.L_info.config(text=f"Modpack successfully istalled at: {self.minecraft_path}.")
+                self.L_info.place(x=40, y=15)
+        else:
+            self.L_info.place_forget()
+            self.L_error.config(text="Error. Invalid modpack path.")
             self.L_error.place(x=40, y=15)
+
 
 
 
