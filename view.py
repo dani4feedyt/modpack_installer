@@ -1,5 +1,7 @@
 import tkinter as tk
+from tkinter import messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
+from screeninfo import get_monitors
 import os
 import re
 from zipfile import ZipFile
@@ -35,6 +37,9 @@ class Window:
 
     d_path = tk.StringVar()
     d_modpath = tk.StringVar()
+
+    root_with = 960
+    root_height = 480
     back = "lightgray"
     front = "gray"
 
@@ -54,11 +59,10 @@ class Window:
     B_setDefault = None
     B_openFolder = None
     B_setUp = None
+    is_admin = False
 
     btn_list = []
-
     tempfolderlist = []
-
 
     def start(self):
         self.d_path.set(self.default_d_path)
@@ -66,11 +70,13 @@ class Window:
 
         self.root.title("Modpack Installer")
         self.root.configure(background=self.back)
-        self.root.minsize(960, 480)
-        self.root.maxsize(960, 480)
-        self.root.geometry("300x300+50+50")
+        self.root.minsize(self.root_with, self.root_height)
+        self.root.maxsize(self.root_with, self.root_height)
+        self.root.geometry(f"{self.root_with}x{self.root_height}+{(get_monitors()[0].width - self.root_with) // 2}+{(get_monitors()[0].height - self.root_height) // 2}")
 
-        self.canvas = tk.Canvas(self.root, width=960, height=480, background=self.back, borderwidth=0, highlightthickness=0)
+        # self.root.geometry("300x300+50+50")
+
+        self.canvas = tk.Canvas(self.root, width=self.root_with, height=self.root_height, background=self.back, borderwidth=0, highlightthickness=0)
         self.canvas.pack()
         self.canvas.create_rectangle((140, 90), (750, 430), fill=self.front)
 
@@ -107,6 +113,10 @@ class Window:
         self.E_modpath.place(x=140, y=440)
 
         self.buttons_place()
+
+        if self.is_admin:
+            tk.messagebox.showwarning("Warning", "Program is opened in an admin mode. Some features may not work properly. Please restart in normal mode.")
+            self.is_admin = False
 
         def filechange_monitor():
             if len(os.listdir(self.temp_path)) != len(self.tempfolderlist):
