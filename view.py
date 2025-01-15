@@ -81,7 +81,7 @@ class Window:
         self.d_path.set(self.default_d_path)
         self.minecraft_path = self.default_d_path
 
-        self.root.title("Modpack Installer 0.6.5.1")
+        self.root.title("Modpack Installer 0.6.6.1")
         self.root.iconbitmap("src/image.ico")
         self.root.configure(background=self.back)
         self.root.minsize(self.root_with, self.root_height)
