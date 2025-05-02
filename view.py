@@ -84,6 +84,7 @@ class Window:
         self.root.title("Modpack Installer 0.6.6.1")
         self.root.iconbitmap("src/image.ico")
         self.root.configure(background=self.back)
+        self.root.bind("<Key>", self.key_callback)
         self.root.minsize(self.root_with, self.root_height)
         self.root.maxsize(self.root_with, self.root_height)
         self.root.geometry(f"{self.root_with}x{self.root_height}+{(get_monitors()[0].width - self.root_with) // 2}+{(get_monitors()[0].height - self.root_height) // 2}")
@@ -144,6 +145,17 @@ class Window:
 
         self.root.after(1000, filechange_monitor)
         self.root.mainloop()
+
+    def key_callback(self, key):
+        if key.state & 4 > 0 and key.keysym == "??":
+            if chr(key.keycode) == 'V':
+                self.root.focus_get().event_generate("<<Paste>>")
+            elif chr(key.keycode) == 'C':
+                self.root.focus_get().event_generate("<<Copy>>")
+            elif chr(key.keycode) == 'X':
+                self.root.focus_get().event_generate("<<Cut>>")
+            elif chr(key.keycode) == 'A':
+                self.root.focus_get().event_generate("<<SelectAll>>")
 
     def root_focus(self, event):
         # x, y = self.root.winfo_pointerxy()
