@@ -136,6 +136,8 @@ class Window:
             self.root.focus_set()
 
         def filechange_monitor():
+            self.d_path.set(self.d_path.get().replace('\\', '/'))
+            self.d_modpath.set(self.d_modpath.get().replace('\\', '/'))
             if len(os.listdir(self.temp_path)) != len(self.tempfolderlist):
                 self.buttons_place()
             self.root.after(1000, filechange_monitor)
